@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 MIGRATIONS: dict[int, str] = {
     1: """
@@ -321,6 +321,55 @@ MIGRATIONS: dict[int, str] = {
         amount REAL NOT NULL,
         method TEXT NOT NULL DEFAULT 'virement',
         paid_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    """,
+    3: """
+    -- Bloc RH
+    CREATE TABLE IF NOT EXISTS employees (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        matricule TEXT NOT NULL UNIQUE,
+        first_name TEXT NOT NULL DEFAULT '',
+        last_name TEXT NOT NULL,
+        position TEXT NOT NULL DEFAULT '',
+        department TEXT NOT NULL DEFAULT '',
+        email TEXT NOT NULL DEFAULT '',
+        phone TEXT NOT NULL DEFAULT '',
+        hire_date TEXT NOT NULL DEFAULT '',
+        contract_type TEXT NOT NULL DEFAULT 'cdi',
+        base_salary REAL NOT NULL DEFAULT 0,
+        active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE TABLE IF NOT EXISTS leave_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employee_id INTEGER NOT NULL REFERENCES employees(id),
+        leave_type TEXT NOT NULL DEFAULT 'conge_paye'
+            CHECK (leave_type IN ('conge_paye','rtt','maladie','sans_solde')),
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        days REAL NOT NULL,
+        reason TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'soumise'
+            CHECK (status IN ('soumise','approuvee','refusee','annulee')),
+        decided_by TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE TABLE IF NOT EXISTS payslips (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        number TEXT NOT NULL UNIQUE,
+        employee_id INTEGER NOT NULL REFERENCES employees(id),
+        period TEXT NOT NULL,             -- AAAA-MM
+        base_salary REAL NOT NULL,
+        bonus REAL NOT NULL DEFAULT 0,
+        overtime REAL NOT NULL DEFAULT 0,
+        gross REAL NOT NULL,
+        cot_employee REAL NOT NULL,
+        cot_employer REAL NOT NULL,
+        net REAL NOT NULL,
+        status TEXT NOT NULL DEFAULT 'impaye'
+            CHECK (status IN ('impaye','paye')),
+        paid_at TEXT NOT NULL DEFAULT '',
+        UNIQUE (employee_id, period)
     );
     """,
 }

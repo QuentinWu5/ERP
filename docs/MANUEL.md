@@ -138,7 +138,17 @@ Vue d'ensemble en temps réel :
 
 ---
 
-## 12. Multi-poste (transition avant le web)
+## 12. RH (ressources humaines)
+
+- **Salariés** : fiche complète (matricule auto `EMP001`, nom, poste, service, contrat CDI/CDD/stage, date d'embauche, salaire de base). Le module s'active/désactive comme les autres dans *Paramètres*.
+- **Congés** : demande avec type (congé payé, RTT, maladie, sans solde), dates ; le compte des **jours ouvrés** est automatique (week-ends exclus). Workflow *Soumise → Approuvée / Refusée*, annulation possible d'une demande approuvée (solde restitué).
+- **Soldes** : acquisition de **2,5 j/mois** depuis l'embauche ; solde = acquis − approuvés (congés payés + RTT). L'approbation au-delà du solde est bloquée.
+- **Paie** : bulletin individuel ou **génération du mois** en un clic (un bulletin par salarié actif, doublons interdits). Brut = base + primes + heures sup ; cotisations salariales (22 % par défaut) et patronales (42 %) paramétrables dans *Paramètres* (`hr_cotisation_salariale` / `hr_cotisation_patronale`) ; net = brut − cotisations salariales. Statut *À payer / Payé*.
+- **Bulletin HTML** : imprimable, en-tête société, détail base/primes/brut/cotisations/net.
+
+---
+
+## 13. Multi-poste (transition avant le web)
 
 - **V1 mono-poste** (recommandé) : SQLite local, aucun réglage.
 - **2-3 postes, faible trafic** : placer `erp.db` sur un poste partagé (lecteur mappé) ; le mode WAL est déjà activé. Risque de verrouillage si écritures simultanées fréquentes.
@@ -146,7 +156,7 @@ Vue d'ensemble en temps réel :
 
 ---
 
-## 13. Questions fréquentes
+## 14. Questions fréquentes
 
 **« Stock négatif interdit »** — Le système bloque toute sortie qui rendrait le stock négatif. Vérifiez les réceptions en attente ou ajustez via *Inventaire physique*.
 
