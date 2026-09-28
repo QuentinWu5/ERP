@@ -44,8 +44,85 @@ class ManufacturingService:
             "INSERT INTO work_orders (number, article_id, bom_id, qty_to_produce, "
             "sales_order_id, notes) VALUES (?,?,?,?,?,?)",
             (number, article_id, bom["id"], qty, sales_order_id, notes))
+        # étapes de gamme -> wo_steps (postes de travail)
+        for step in self.db.query(
+                "SELECT * FROM routings WHERE article_id=? ORDER BY step_no",
+                (article_id,)):
+            wc = self.db.query_one(
+                "SELECT id FROM work_centers WHERE code=? OR name=?",
+                (step["tooling"], step["description"]))
+            self.db.execute(
+                "INSERT OR IGNORE INTO wo_steps (work_order_id, step_no, "
+                "description, work_center_id, estimated_time) VALUES (?,?,?,?,?)",
+                (wo_id, step["step_no"], step["description"],
+                 wc["id"] if wc else None, 0))
         self.settings.audit("wo.create", "work_orders", wo_id, number)
         return {"id": wo_id, "number": number}
+
+    # ------------------------------------------------------------------ postes
+    def list_work_centers(self) -> list[dict]:
+        return self.db.query("SELECT * FROM work_centers WHERE active=1 "
+                             "ORDER BY code")
+
+    def create_work_center(self, code: str, name: str,
+                           capacity_hours: float = 8) -> int:
+        return self.db.execute(
+            "INSERT INTO work_centers (code, name, capacity_hours) "
+            "VALUES (?,?,?)", (code.strip().upper(), name, capacity_hours))
+
+    def wo_steps(self, wo_id: int) -> list[dict]:
+        return self.db.query(
+            "SELECT ws.*, wc.code AS wc_code, wc.name AS wc_name "
+            "FROM wo_steps ws LEFT JOIN work_centers wc "
+            "ON wc.id=ws.work_center_id WHERE ws.work_order_id=? "
+            "ORDER BY ws.step_no", (wo_id,))
+
+    def start_step(self, wo_id: int, step_no: int) -> None:
+        step = self.db.query_one(
+            "SELECT * FROM wo_steps WHERE work_order_id=? AND step_no=?",
+            (wo_id, step_no))
+        if not step:
+            raise ManufacturingError("Étape introuvable")
+        if step["status"] == "termine":
+            raise ManufacturingError("Étape déjà terminée")
+        if step["status"] == "a_faire":
+            prior = self.db.query_one(
+                "SELECT COUNT(*) AS c FROM wo_steps WHERE work_order_id=? "
+                "AND step_no < ? AND status != 'termine'", (wo_id, step_no))
+            if prior["c"]:
+                raise ManufacturingError(
+                    "Des étapes précédentes ne sont pas terminées")
+            self.db.execute(
+                "UPDATE wo_steps SET status='en_cours', "
+                "started_at=datetime('now','localtime') WHERE id=?", (step["id"],))
+            if (self.get_wo(wo_id) or {}).get("status") == "lance":
+                self.db.execute(
+                    "UPDATE work_orders SET status='en_cours' WHERE id=?",
+                    (wo_id,))
+
+    def finish_step(self, wo_id: int, step_no: int,
+                    actual_time: float = 0) -> None:
+        step = self.db.query_one(
+            "SELECT * FROM wo_steps WHERE work_order_id=? AND step_no=?",
+            (wo_id, step_no))
+        if not step:
+            raise ManufacturingError("Étape introuvable")
+        if step["status"] != "en_cours":
+            raise ManufacturingError("Étape non démarrée")
+        self.db.execute(
+            "UPDATE wo_steps SET status='termine', actual_time=?, "
+            "finished_at=datetime('now','localtime') WHERE id=?",
+            (actual_time, step["id"]))
+
+    def queue_by_work_center(self, wc_id: int) -> list[dict]:
+        """File d'attente atelier : étapes non terminées du poste, par OF."""
+        return self.db.query(
+            "SELECT ws.*, wo.number AS wo_number, a.sku, a.designation "
+            "FROM wo_steps ws JOIN work_orders wo ON wo.id=ws.work_order_id "
+            "JOIN articles a ON a.id=wo.article_id "
+            "WHERE ws.work_center_id=? AND ws.status != 'termine' "
+            "AND wo.status IN ('lance','en_cours') "
+            "ORDER BY ws.step_no, ws.id", (wc_id,))
 
     def get_wo(self, wo_id: int) -> Optional[dict]:
         return self.db.query_one(

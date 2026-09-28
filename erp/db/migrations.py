@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 MIGRATIONS: dict[int, str] = {
     1: """
@@ -411,6 +411,64 @@ MIGRATIONS: dict[int, str] = {
     );
     CREATE INDEX IF NOT EXISTS idx_leaves_dates ON leave_requests(start_date, end_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_due ON project_tasks(due_date);
+    """,
+    5: """
+    -- Configurateur de variantes (produits génériques + options)
+    CREATE TABLE IF NOT EXISTS product_templates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sku_base TEXT NOT NULL UNIQUE,
+        designation TEXT NOT NULL,
+        sale_base_price REAL NOT NULL DEFAULT 0,
+        active INTEGER NOT NULL DEFAULT 1
+    );
+    CREATE TABLE IF NOT EXISTS template_components (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        template_id INTEGER NOT NULL REFERENCES product_templates(id),
+        component_id INTEGER NOT NULL REFERENCES articles(id),
+        qty_per REAL NOT NULL DEFAULT 1,
+        scrap_pct REAL NOT NULL DEFAULT 0,
+        UNIQUE (template_id, component_id)
+    );
+    CREATE TABLE IF NOT EXISTS template_options (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        template_id INTEGER NOT NULL REFERENCES product_templates(id),
+        name TEXT NOT NULL,
+        code TEXT NOT NULL,
+        position INTEGER NOT NULL DEFAULT 0,
+        UNIQUE (template_id, code)
+    );
+    CREATE TABLE IF NOT EXISTS option_values (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        option_id INTEGER NOT NULL REFERENCES template_options(id),
+        code TEXT NOT NULL,
+        label TEXT NOT NULL,
+        component_id INTEGER REFERENCES articles(id),
+        qty_per REAL NOT NULL DEFAULT 1,
+        price_extra REAL NOT NULL DEFAULT 0,
+        UNIQUE (option_id, code)
+    );
+    -- Postes de travail + suivi OF par étape de gamme
+    CREATE TABLE IF NOT EXISTS work_centers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        capacity_hours REAL NOT NULL DEFAULT 8,
+        active INTEGER NOT NULL DEFAULT 1
+    );
+    CREATE TABLE IF NOT EXISTS wo_steps (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        work_order_id INTEGER NOT NULL REFERENCES work_orders(id),
+        step_no INTEGER NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        work_center_id INTEGER REFERENCES work_centers(id),
+        estimated_time REAL NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'a_faire'
+            CHECK (status IN ('a_faire','en_cours','termine')),
+        started_at TEXT NOT NULL DEFAULT '',
+        finished_at TEXT NOT NULL DEFAULT '',
+        actual_time REAL NOT NULL DEFAULT 0,
+        UNIQUE (work_order_id, step_no)
+    );
     """,
 }
 

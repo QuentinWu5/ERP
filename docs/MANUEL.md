@@ -171,7 +171,7 @@ Vue d'ensemble en temps réel :
 
 ---
 
-## 15. Questions fréquentes
+## 16. Questions fréquentes
 
 **« Stock négatif interdit »** — Le système bloque toute sortie qui rendrait le stock négatif. Vérifiez les réceptions en attente ou ajustez via *Inventaire physique*.
 

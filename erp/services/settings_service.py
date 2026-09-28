@@ -8,7 +8,7 @@ from erp.db.connection import Database
 MODULES = [
     "settings", "inventory", "bom", "sales",
     "manufacturing", "purchasing", "warehouse", "invoicing", "hr",
-    "projects", "dashboard",
+    "projects", "production", "dashboard",
 ]
 
 DEFAULTS: dict[str, str] = {

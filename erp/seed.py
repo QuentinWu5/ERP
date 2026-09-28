@@ -52,3 +52,43 @@ def seed_demo(db: Database) -> None:
     bom.add_line(b_ctrl, ids["CABLE-2M"], 1, 0)
     bom.add_line(b_ctrl, ids["EMBAL-K7"], 1, 0)
     bom.add_line(b_ctrl, ids["ETIQ-BAR"], 2, 0)
+
+    # Postes de travail + gabarit vanne de démonstration (configurateur)
+    from erp.services.manufacturing_service import ManufacturingService
+    from erp.services.configurator_service import ConfiguratorService
+    mfg = ManufacturingService(db, inv, bom, settings)
+    for code, name in (("SOUD", "Soudure"), ("USIN", "Usinage"),
+                       ("ASSE", "Assemblage"), ("TEST", "Test & contrôle")):
+        try:
+            mfg.create_work_center(code, name)
+        except Exception:
+            pass
+    if not db.query_one("SELECT id FROM product_templates "
+                        "WHERE sku_base='VANNE-BALL'"):
+        cfg = ConfiguratorService(db, inv, bom, settings)
+        tid = cfg.create_template("VANNE-BALL", "Vanne à boisselet", 200)
+        cfg.add_base_component(tid, ids["VIS-M5"], 8, 5)
+        dn = cfg.add_option(tid, "Diamètre nominal", "DN", 1)
+        cfg.add_option_value(dn, "025", "DN25")
+        cfg.add_option_value(dn, "050", "DN50", price_extra=20)
+        cfg.add_option_value(dn, "100", "DN100", price_extra=55)
+        corps = {}
+        for sku, des, prix in (
+                ("CORPS-INOX", "Corps inox 316", 45),
+                ("CORPS-BRONZE", "Corps bronze", 38)):
+            if sku not in ids:
+                ids[sku] = inv.create_article(
+                    {"sku": sku, "designation": des, "type": "composant",
+                     "purchase_price": prix})
+                inv.entry(ids[sku], 20, prix, move_type="reprise_initiale",
+                          reason="Stock initial de démonstration",
+                          source_doc="DEMO")
+            corps[sku] = ids[sku]
+        mat = cfg.add_option(tid, "Matière corps", "MAT", 2)
+        cfg.add_option_value(mat, "INOX", "Inox 316",
+                             component_id=corps["CORPS-INOX"])
+        cfg.add_option_value(mat, "BRONZE", "Bronze",
+                             component_id=corps["CORPS-BRONZE"])
+        act = cfg.add_option(tid, "Actionneur", "ACT", 3)
+        cfg.add_option_value(act, "MAN", "Manuel", price_extra=12)
+        cfg.add_option_value(act, "PNEU", "Pneumatique", price_extra=60)
