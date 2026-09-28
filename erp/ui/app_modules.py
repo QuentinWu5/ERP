@@ -1,6 +1,7 @@
 """Définition partagée des modules de l'ERP (ordre des onglets, libellés)."""
 MODULES = ["dashboard", "settings", "inventory", "bom", "sales",
-           "manufacturing", "purchasing", "warehouse", "invoicing", "hr"]
+           "manufacturing", "purchasing", "warehouse", "invoicing", "hr",
+           "projects"]
 MODULE_LABELS = {
     "settings": "Paramètres",
     "inventory": "Inventaire",
@@ -11,5 +12,6 @@ MODULE_LABELS = {
     "warehouse": "Magasin",
     "invoicing": "Facturation",
     "hr": "RH",
+    "projects": "Projets & Calendrier",
     "dashboard": "Tableau de bord",
 }

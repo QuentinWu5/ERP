@@ -1,8 +1,9 @@
-# ERP modulaire — V1 Tkinter (Phases 1 à 6 + RH)
+# ERP modulaire — V1 Tkinter (Phases 1 à 6 + RH + Projets)
 
 ERP simple et efficace en Python + SQLite pour suivre un produit de bout en bout :
 commande client → AR → fabrication (OF) → livraison (BL) → facturation → paiement.
-Bloc RH inclus : salariés, congés, paie.
+Blocs RH (salariés, congés, paie) et Projets & Calendrier (livrables, calendrier
+partagé, rappels email SMTP) inclus.
 
 - **Manuel utilisateur : [`docs/MANUEL.md`](docs/MANUEL.md)**
 
@@ -21,6 +22,7 @@ python main.py mabase.db  # base personnalisée
 python3 tests/test_phase1.py   # cœur, paramètres, inventaire, nomenclature, CSV
 python3 tests/test_e2e.py      # flux complet commande → paiement + cas limites
 python3 tests/test_hr.py       # RH : salariés, congés, paie
+python3 tests/test_projects.py # projets, import commandes, calendrier, rappels
 ```
 
 ## Structure

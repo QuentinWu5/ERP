@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 MIGRATIONS: dict[int, str] = {
     1: """
@@ -371,6 +371,46 @@ MIGRATIONS: dict[int, str] = {
         paid_at TEXT NOT NULL DEFAULT '',
         UNIQUE (employee_id, period)
     );
+    """,
+    4: """
+    -- Bloc Projets & Calendrier
+    CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        number TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        customer_id INTEGER REFERENCES customers(id),
+        sales_order_id INTEGER REFERENCES sales_orders(id),
+        status TEXT NOT NULL DEFAULT 'ouvert'
+            CHECK (status IN ('ouvert','en_cours','termine','annule')),
+        start_date TEXT NOT NULL DEFAULT '',
+        due_date TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE TABLE IF NOT EXISTS project_tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        project_id INTEGER NOT NULL REFERENCES projects(id),
+        title TEXT NOT NULL,
+        assigned_to INTEGER REFERENCES employees(id),
+        due_date TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'a_faire'
+            CHECK (status IN ('a_faire','en_cours','termine','annule')),
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE TABLE IF NOT EXISTS reminders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kind TEXT NOT NULL,
+        ref_id INTEGER NOT NULL,
+        due_date TEXT NOT NULL,
+        label TEXT NOT NULL,
+        recipients TEXT NOT NULL DEFAULT '',
+        sent INTEGER NOT NULL DEFAULT 0,
+        sent_at TEXT NOT NULL DEFAULT '',
+        UNIQUE (kind, ref_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_leaves_dates ON leave_requests(start_date, end_date);
+    CREATE INDEX IF NOT EXISTS idx_tasks_due ON project_tasks(due_date);
     """,
 }
 

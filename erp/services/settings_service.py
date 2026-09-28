@@ -8,7 +8,7 @@ from erp.db.connection import Database
 MODULES = [
     "settings", "inventory", "bom", "sales",
     "manufacturing", "purchasing", "warehouse", "invoicing", "hr",
-    "dashboard",
+    "projects", "dashboard",
 ]
 
 DEFAULTS: dict[str, str] = {
@@ -22,6 +22,12 @@ DEFAULTS: dict[str, str] = {
     "of_missing_policy": "warn",  # warn | block
     "hr_cotisation_salariale": "22",
     "hr_cotisation_patronale": "42",
+    "smtp_host": "",
+    "smtp_port": "587",
+    "smtp_user": "",
+    "smtp_password": "",
+    "smtp_from": "",
+    "reminder_emails": "",
 }
 
 PREFIXES = ["CMD", "AR", "BL", "FAC", "AVC", "OF", "CDF", "REC", "INV"]

@@ -148,7 +148,22 @@ Vue d'ensemble en temps réel :
 
 ---
 
-## 13. Multi-poste (transition avant le web)
+## 13. Projets & Calendrier
+
+- **Projets** (`PRJ-2026-0001`) : manuels ou **importés d'une commande client** en un clic — les lignes de commande deviennent des livrables (tâches), l'échéance du projet = date de livraison souhaitée.
+- **Tâches / livrables** : titre, échéance, assignée à un salarié, statut (À faire / En cours / Terminé / Annulé).
+- **Calendrier partagé** : vue mensuelle (navigation ◀ ▶) affichant sur chaque jour :
+  - 🌴 les congés approuvés (plage de dates),
+  - 📦 les échéances de projets,
+  - ✅ les tâches à livrer,
+  - 🚚 les livraisons clients (date souhaitée des commandes),
+  - ⚙️ les OF en cours.
+- **Rappels email** : « Rappels email… » détecte les échéances des N prochains jours (défaut 7) et envoie un email récapitulatif. Anti-doublon : un rappel n'est envoyé qu'une fois par échéance.
+- **Configuration SMTP** (onglet Paramètres) : `smtp_host`, `smtp_port` (587), `smtp_user`, `smtp_password`, `smtp_from`, et `reminder_emails` (destinataires par défaut, séparés par des virgules). Sans SMTP configuré, les rappels sont enregistrés et l'envoi reprendra une fois les Paramètres renseignés.
+
+---
+
+## 14. Multi-poste (transition avant le web)
 
 - **V1 mono-poste** (recommandé) : SQLite local, aucun réglage.
 - **2-3 postes, faible trafic** : placer `erp.db` sur un poste partagé (lecteur mappé) ; le mode WAL est déjà activé. Risque de verrouillage si écritures simultanées fréquentes.
@@ -156,7 +171,7 @@ Vue d'ensemble en temps réel :
 
 ---
 
-## 14. Questions fréquentes
+## 15. Questions fréquentes
 
 **« Stock négatif interdit »** — Le système bloque toute sortie qui rendrait le stock négatif. Vérifiez les réceptions en attente ou ajustez via *Inventaire physique*.
 

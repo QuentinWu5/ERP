@@ -21,11 +21,13 @@ from erp.services.purchasing_service import PurchasingService
 from erp.services.sales_service import SalesService
 from erp.services.settings_service import SettingsService
 from erp.services.hr_service import HrService
+from erp.services.project_service import ProjectService
 from erp.services.warehouse_service import WarehouseService
 from erp.ui.app_modules import MODULES, MODULE_LABELS
 from erp.ui.flux_views import (DashboardTab, InvoicingTab, ManufacturingTab,
                                PurchasingTab, SalesTab, WarehouseTab)
 from erp.ui.hr_view import HrTab
+from erp.ui.project_view import ProjectsTab
 
 
 class App(tk.Tk):
@@ -43,6 +45,7 @@ class App(tk.Tk):
         self.warehouse = WarehouseService(db, self.inventory, self.sales, self.settings)
         self.invoicing = InvoicingService(db, self.sales, self.settings)
         self.hr = HrService(db, self.settings)
+        self.projects = ProjectService(db, self.settings)
         self.dashboard = DashboardService(db, self.settings, self.inventory,
                                            self.sales, self.mfg, self.purchasing,
                                            self.invoicing, self.bom)
@@ -79,6 +82,9 @@ class App(tk.Tk):
             self.tab_widgets[module] = InvoicingTab(self, frame, self.invoicing, self.sales)
         elif module == "hr":
             self.tab_widgets[module] = HrTab(self, frame, self.hr)
+        elif module == "projects":
+            self.tab_widgets[module] = ProjectsTab(self, frame, self.projects,
+                                                   self.sales)
         elif module == "dashboard":
             self.tab_widgets[module] = DashboardTab(self, frame, self.dashboard)
 
