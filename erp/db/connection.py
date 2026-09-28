@@ -70,6 +70,8 @@ class Database:
             self.conn.commit()
 
     # -- Transactions (imbriquables via SAVEPOINT) ----------------------
+    _depth: int = 0
+
     def begin(self) -> None:
         if self._depth == 0:
             self.conn.execute("BEGIN IMMEDIATE")
