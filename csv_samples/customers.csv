@@ -1,0 +1,3 @@
+reference;nom;adresse;email;telephone;conditions_paiement
+C0001;Entreprise Alpha;5 rue de la Paix, 75000 Paris;contact@alpha.fr;01 23 45 67 89;30 jours
+C0002;Société Bêta;10 avenue des Tilleuls, 69000 Lyon;info@beta.fr;04 56 78 90 12;45 jours
